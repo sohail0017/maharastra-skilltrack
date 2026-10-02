@@ -1542,12 +1542,23 @@ async function startServer() {
 
   try {
     if (!uri) throw new Error('MONGODB_URI is missing from .env');
-    await mongoose.connect(uri, { serverSelectionTimeoutMS: 4000 });
-    console.log(`✓ MongoDB connected to database: ${mongoose.connection.name}`);
+
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 4000,
+    });
+
+    console.log(
+      `✓ MongoDB connected to database: ${mongoose.connection.name}`
+    );
 
     const database = mongoose.connection.db;
+
     if (database) {
-      await getUsersCollection().createIndex({ email: 1 }, { unique: true });
+      await getUsersCollection().createIndex(
+        { email: 1 },
+        { unique: true }
+      );
+
       for (const table of [
         'trainees',
         'employees',
@@ -1559,25 +1570,24 @@ async function startServer() {
         'activity_logs',
         'reminder_logs',
       ]) {
-        await database.collection(table).createIndex({ id: 1 }, { unique: true });
+        await database.collection(table).createIndex(
+          { id: 1 },
+          { unique: true }
+        );
       }
     }
+
     await seedDatabase(false);
   } catch (error: any) {
-    console.warn(`⚠ Notice: Running in resilient datastore mode (${error?.message || 'offline'}).`);
+    console.warn(
+      `⚠ Notice: Running in resilient datastore mode (${error?.message || 'offline'}).`
+    );
+
     await seedDatabase(true);
   }
 
   await seedDefaultUsers();
-
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`✓ SkillTrack API server running on http://localhost:${PORT}`);
-    console.log(`  Demo Admin:   admin@skilltrack.gov.in / Admin@12345`);
-    console.log(`  Demo Citizen: citizen@skilltrack.gov.in / Citizen@12345`);
-  });
 }
 
-startServer().catch((error) => {
-  console.error('Failed to start server:', error.message);
-  process.exit(1);
-});
+export { startServer };
+export default app;
