@@ -46,7 +46,7 @@ import {
   insertTableRecord,
   updateTableRecord,
   deleteTableRecord,
-} from './db.ts';
+} from './db';
 
 export async function listRecords<T>(table: string): Promise<T[]> {
   if (mongoose.connection.readyState !== 1) {

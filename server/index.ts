@@ -6,7 +6,7 @@ import {
   insertRecord,
   updateRecord,
   deleteRecord,
-} from './mongoData.ts';
+} from './mongoData';
 import 'dotenv/config';
 import mongoose from 'mongoose';
 import {
@@ -23,7 +23,7 @@ import {
   getReminderLogsByTrainee,
   ReminderLog,
   getFallbackCollection,
-} from './db.ts';
+} from './db';
 import {
   authenticate,
   requireAuth,
@@ -32,10 +32,15 @@ import {
   comparePassword,
   generateToken,
   AuthenticatedRequest,
-} from './auth.ts';
+} from './auth';
 
 export const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5001;
+
+if (process.env.VERCEL) {
+  app.set('trust proxy', 1);
+}
+
 function getUsersCollection(): any {
   const mongoDb = mongoose.connection.db;
   if (mongoDb && mongoose.connection.readyState === 1) return mongoDb.collection('users');
@@ -1587,6 +1592,21 @@ async function startServer() {
   }
 
   await seedDefaultUsers();
+}
+
+if (!process.env.VERCEL) {
+  startServer()
+    .then(() => {
+      app.listen(PORT, '0.0.0.0', () => {
+        console.log(`✓ SkillTrack API server running on http://localhost:${PORT}`);
+        console.log(`  Demo Admin:   admin@skilltrack.gov.in / Admin@12345`);
+        console.log(`  Demo Citizen: citizen@skilltrack.gov.in / Citizen@12345`);
+      });
+    })
+    .catch((error) => {
+      console.error('Failed to start server:', error.message);
+      process.exit(1);
+    });
 }
 
 export { startServer };
